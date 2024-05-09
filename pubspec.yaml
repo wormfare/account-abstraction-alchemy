@@ -2,8 +2,8 @@ name: account_abstraction_alchemy
 description: "Account Abstraction smart wallet client for Alchemy, only supports usage with gas manager"
 version: 0.0.1
 homepage: https://wormfare.com/
-repository: https://github.com/
-issue_tracker: https://github.com/issues
+repository: https://github.com/wormfare/account-abstraction-alchemy
+issue_tracker: https://github.com/wormfare/account-abstraction-alchemy/issues
 
 environment:
   sdk: ">=3.3.4 <4.0.0"
