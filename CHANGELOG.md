@@ -9,3 +9,8 @@
 ## 0.0.3
 
 * Updated README.md
+  
+## 0.0.3
+
+* Added alchemy light account support for entrypoint v.0.6
+* Fixed sending batch transactions
