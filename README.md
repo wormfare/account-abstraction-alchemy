@@ -100,6 +100,9 @@ print(response!.receipt.transactionHash);
 
 This library designed to be used only with gas manager, to sponsor gas for transactions.
 
-Currently supports only Entry point version 0.6, and Simple account.
+Important: if you want to send batch transactions use Light account type.
+
+Currently supports only Entry point versions: 0.6
+Currently supports smart accounts: Simple, Light
 
 Tested on Android and Web platforms, but should work on all platforms.
