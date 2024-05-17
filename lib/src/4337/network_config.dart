@@ -26,6 +26,9 @@ class NetworkConfig {
   /// The URL of the paymaster service for this chain.
   late String paymasterUrl;
 
+  /// Smart account type
+  late AccountType accountType;
+
   /// Creates a new instance of the [NetworkConfig] class.
   ///
   /// [chainId] is the unique identifier of the chain.
@@ -110,10 +113,6 @@ class NetworkConfigs {
     String alchemyApiKey,
     String gasPolicyId,
   ) {
-    if (accountType == AccountType.light) {
-      throw Exception('Light account not yet implemented');
-    }
-
     if (version == EntryPointVersion.v07) {
       throw Exception('v.0.7 not yet implemented');
     }
@@ -155,11 +154,11 @@ class NetworkConfigs {
         break;
     }
 
+    updatedNetwork.accountType = accountType;
+
     return updatedNetwork;
   }
 }
-
-
 
 /// Represents an EntryPoint contract version v0.6 or v0.7.
 enum EntryPointVersion { v06, v07 }

@@ -591,13 +591,13 @@ class UserOperationResponse {
     Duration elapsed = Duration.zero;
     while (elapsed < timeout) {
       try {
-        print('Polling for receipt, elapsed time: ${elapsed.inSeconds}s');
+        debugPrint('Polling for receipt, elapsed time: ${elapsed.inSeconds}s');
         final receipt = await _callback(userOpHash);
         if (receipt != null) {
-          print('Success: receipt received!');
+          debugPrint('Success: receipt received!');
           return receipt;
         } else {
-          print('Waiting: no receipt available yet.');
+          debugPrint('Waiting: no receipt available yet.');
         }
       } catch (e) {
         Logger.conditionalWarning(true, 'Error while waiting for receipt: $e');

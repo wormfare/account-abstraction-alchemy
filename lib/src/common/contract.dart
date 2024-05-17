@@ -337,7 +337,9 @@ class Contract {
       bool isSafe = false}) {
     List params = [
       recipients,
-      amounts?.map<BigInt>((e) => e.getInWei) ?? [],
+      amounts != null
+          ? amounts.map<BigInt>((e) => e.getInWei).toList()
+          : List<BigInt>.filled(recipients.length, BigInt.zero),
       innerCalls ?? Uint8List.fromList([]),
     ];
 

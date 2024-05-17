@@ -32,8 +32,20 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
       chainId: _networkConfig.chainId,
       rpc: _jsonRpc.rpc);
 
+  /// A getter for the LightAccountFactory contract instance.
+  _LightAccountFactory get _lightAccountFactory => _LightAccountFactory(
+      address: _networkConfig.accountFactory,
+      chainId: _networkConfig.chainId,
+      rpc: _jsonRpc.rpc);
+
   @override
   Future<SmartWallet> createSimpleAccount(Uint256 salt) async {
+    if ((_networkConfig.accountType != AccountType.simple)) {
+      throw Exception("Set account type to simple in network config");
+    }
+    assert(_networkConfig.accountType != AccountType.simple,
+        'Set account type to simple in network config');
+
     final signer = EthereumAddress.fromHex(_signer.getAddress());
 
     // Get the predicted address of the simple account
@@ -50,6 +62,29 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
     final initCode = _getInitCode(initCalldata);
 
     // Create the SmartWallet instance for the simple account
+    return _createAccount(_networkConfig, address, initCode);
+  }
+
+  @override
+  Future<SmartWallet> createLightAccount(Uint256 salt) async {
+    if (_networkConfig.accountType != AccountType.light) {
+      throw Exception('Set account type to light in network config');
+    }
+    final signer = EthereumAddress.fromHex(_signer.getAddress());
+    // Get the predicted address of the light account
+    final address = await _lightAccountFactory
+        .getAddress((owner: signer, salt: salt.value));
+
+    // Encode the call data for the `createAccount` function
+    // This function is used to create the simple account with the given signer address and salt
+    final initCalldata = _lightAccountFactory.self
+        .function('createAccount')
+        .encodeCall([signer, salt.value]);
+
+    // Generate the initialization code by combining the account factory address and the encoded call data
+    final initCode = _getInitCode(initCalldata);
+
+    // Create the SmartWallet instance for the light account
     return _createAccount(_networkConfig, address, initCode);
   }
 
@@ -87,7 +122,7 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
   /// Returns a [Uint8List] containing the initialization code.
   Uint8List _getInitCode(Uint8List initCalldata) {
     final List<int> extended =
-        _networkConfig.accountFactory!.addressBytes.toList();
+        _networkConfig.accountFactory.addressBytes.toList();
     extended.addAll(initCalldata);
     return Uint8List.fromList(extended);
   }

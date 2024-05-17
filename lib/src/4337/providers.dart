@@ -108,6 +108,7 @@ class JsonRPCProvider implements JsonRPCProviderBase {
   Future<TransactionReceipt> getTransactionReceipt(String txHash) async {
     final result = await rpc
         .send<Map<String, dynamic>>('eth_getTransactionReceipt', [txHash]);
+    // ignore: unnecessary_null_comparison
     if (result == null) {
       throw Exception('Transaction receipt not found for $txHash');
     }

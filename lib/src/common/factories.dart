@@ -15,3 +15,19 @@ class _SimpleAccountFactory extends SimpleAccountFactory {
     super.chainId,
   }) : super(client: Web3Client.custom(rpc));
 }
+
+/// A class that extends [SimpleAccountFactory] and implements [SimpleAccountFactoryBase].
+/// It creates an instance of [SimpleAccountFactory] with a custom [RPCBase] client.
+/// Used to create instances of [SmartWallet] for simple accounts.
+class _LightAccountFactory extends LightAccountFactory {
+  /// Creates a new instance of [_LightAccountFactory].
+  ///
+  /// [address] is the address of the light account factory.
+  /// [chainId] is the ID of the blockchain chain.
+  /// [rpc] is the [RPCBase] client used for communication with the blockchain.
+  _LightAccountFactory({
+    required super.address,
+    required RPCBase rpc,
+    super.chainId,
+  }) : super(client: Web3Client.custom(rpc));
+}
