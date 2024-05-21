@@ -87,6 +87,13 @@ class NetworkConfigs {
       bundlerUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
       paymasterUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
     ),
+    Network.polygonAmoy: NetworkConfig(
+      chainId: 80002,
+      explorer: 'https://amoy.polygonscan.com/',
+      jsonRpcUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
+      bundlerUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
+      paymasterUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
+    ),
   };
 
   const NetworkConfigs._();
@@ -209,4 +216,5 @@ enum Network {
 
   // testnet
   sepolia,
+  polygonAmoy,
 }

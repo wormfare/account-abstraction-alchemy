@@ -147,6 +147,35 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
   }
 
   @override
+  Future<BigInt> estimateGasForSingleOperation(
+      EthereumAddress to, Uint8List encodedFunctionData,
+      {EtherAmount? amount}) async {
+    final op = buildUserOperation(
+        callData: Contract.execute(
+      _walletAddress,
+      to: to,
+      amount: amount,
+      innerCallData: encodedFunctionData,
+    ));
+
+    return _estimateGas(op);
+  }
+
+  @override
+  Future<BigInt> estimateGasForBatchedOperation(
+      List<EthereumAddress> recipients, List<Uint8List> calls,
+      {List<EtherAmount>? amounts}) async {
+    final op = buildUserOperation(
+        callData: Contract.executeBatch(
+            walletAddress: _walletAddress,
+            recipients: recipients,
+            amounts: amounts,
+            innerCalls: calls));
+
+    return _estimateGas(op);
+  }
+
+  @override
   Future<UserOperation> signUserOperation(
     UserOperation op,
   ) async {
@@ -195,4 +224,16 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
 
         return op;
       });
+
+  /// Returns transaction fee price, taken from [UserOperation] paymaster response
+  Future<BigInt> _estimateGas(UserOperation op) async {
+    final res = await prepareUserOperation(op);
+
+    BigInt totalGas =
+        res.callGasLimit + res.verificationGasLimit + res.preVerificationGas;
+
+    BigInt totalGasPrice = res.maxFeePerGas + res.maxPriorityFeePerGas;
+
+    return totalGas * totalGasPrice;
+  }
 }

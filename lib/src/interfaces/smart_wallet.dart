@@ -197,4 +197,53 @@ abstract class SmartWalletBase {
   /// var signedOperation = await signUserOperation(myUserOperation);
   /// ```
   Future<UserOperation> signUserOperation(UserOperation op);
+
+  /// Estimates transaction fee price for single user operation.
+  /// Useful in case you want to know transaction fee, one of the use cases
+  /// is if you want to deduct tx fee from user wallet to compensate paymaster expenses
+  /// in case you want users to pay fees in your tokens
+  ///
+  /// Parameters: same as for [sendTransaction]
+  ///   - `to`: The [EthereumAddress] of the transaction recipient.
+  ///   - `encodedFunctionData`: The [Uint8List] containing the encoded function data for the transaction.
+  ///   - `amount`: Optional [EtherAmount] representing the amount to be sent in the transaction. Defaults to `null`.
+  ///
+  ///   Returns:
+  ///   A [BigInt] representing transaction fee paid by paymaster in selected network native tokens.
+  ///
+  ///   ```
+  ///     final wallet = await wallet.estimateGasForTransaction(
+  ///       contract.address,
+  ///       transferFunction.encodeCall([wallet.wallet!.address, BigInt.one])
+  ///      );
+  ///   ```
+  Future<BigInt> estimateGasForSingleOperation(
+      EthereumAddress to, Uint8List encodedFunctionData,
+      {EtherAmount? amount});
+
+  /// Estimates transaction fee price for batched user operation.
+  /// Useful in case you want to know transaction fee, one of the use cases
+  /// is if you want to deduct tx fee from user wallet to compensate paymaster expenses
+  /// in case you want users to pay fees in your tokens
+  ///
+  ///   Parameters: same as for [sendBatchedTransaction]
+  ///   - `recipients`: A list of [EthereumAddress] representing the recipients of the batched transaction.
+  ///   - `calls`: A list of [Uint8List] representing the calldata for each transaction in the batch.
+  ///   - `amounts`: Optional list of [EtherAmount] representing the amounts for each transaction. Defaults to `null`.
+  ///
+  ///   Returns:
+  ///   A [BigInt] representing transaction fee paid by paymaster in selected network native tokens.
+  ///
+  ///   ```
+  ///     final txFee = await wallet.estimateGasForBatchedTransaction(
+  ///      [feeCollectorContractAddress, contract.address],
+  ///      [
+  ///        transferFunction.encodeCall([wallet.wallet!.address, BigInt.from(0)]),
+  ///        transferFunction.encodeCall([wallet.wallet!.address, BigInt.from(0)]),
+  ///      ],
+  ///    );
+  ///   ```
+  Future<BigInt> estimateGasForBatchedOperation(
+      List<EthereumAddress> recipients, List<Uint8List> calls,
+      {List<EtherAmount>? amounts});
 }
