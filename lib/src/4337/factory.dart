@@ -10,6 +10,12 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
   final NetworkConfig _networkConfig;
   final Signer _signer;
 
+  final int preVerificationGasMultiplier;
+  final int maxFeePerGasMultiplier;
+  final int maxPriorityFeePerGasMultiplier;
+  final int callGasLimitMultiplier;
+  final int verificationGasLimitMultiplier;
+
   late final JsonRPCProvider _jsonRpc;
   late final BundlerProvider _bundler;
   late final Contract _contract;
@@ -19,9 +25,16 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
   /// [_networkConfig] is the network configuration.
   /// [_signer] is the signer instance used for signing transactions.
   ///
-
-  SmartWalletFactory(this._networkConfig, this._signer)
-      : _jsonRpc = JsonRPCProvider(_networkConfig),
+  /// Multiplier values can be passed to adjust the gas and fee calculations.
+  SmartWalletFactory(
+    this._networkConfig,
+    this._signer, {
+    this.preVerificationGasMultiplier = 3,
+    this.maxFeePerGasMultiplier = 3,
+    this.maxPriorityFeePerGasMultiplier = 3,
+    this.callGasLimitMultiplier = 3,
+    this.verificationGasLimitMultiplier = 3,
+  })  : _jsonRpc = JsonRPCProvider(_networkConfig),
         _bundler = BundlerProvider(_networkConfig) {
     _contract = Contract(_jsonRpc.rpc);
   }
@@ -43,7 +56,7 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
     if ((_networkConfig.accountType != AccountType.simple)) {
       throw Exception("Set account type to simple in network config");
     }
-    assert(_networkConfig.accountType != AccountType.simple,
+    assert(_networkConfig.accountType == AccountType.simple,
         'Set account type to simple in network config');
 
     final signer = EthereumAddress.fromHex(_signer.getAddress());
@@ -108,7 +121,17 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
       ..addPlugin<BundlerProviderBase>('bundler', _bundler)
       ..addPlugin<JsonRPCProviderBase>('jsonRpc', _jsonRpc)
       ..addPlugin<Contract>('contract', _contract)
-      ..addPlugin<PaymasterBase>('paymaster', Paymaster(networkConfig));
+      ..addPlugin<PaymasterBase>(
+        'paymaster',
+        Paymaster(
+          networkConfig,
+          preVerificationGasMultiplier: preVerificationGasMultiplier,
+          maxFeePerGasMultiplier: maxFeePerGasMultiplier,
+          maxPriorityFeePerGasMultiplier: maxPriorityFeePerGasMultiplier,
+          callGasLimitMultiplier: callGasLimitMultiplier,
+          verificationGasLimitMultiplier: verificationGasLimitMultiplier,
+        ),
+      );
 
     return wallet;
   }

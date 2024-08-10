@@ -75,7 +75,7 @@ final salt = Uint256.fromHex(hexlify(
 		keccak256(EthereumAddress.fromHex(signer.getAddress()).addressBytes)));
 
 // Create wallet factory
-final SmartWalletFactory walletFactory = SmartWalletFactory(_network, signer);
+final SmartWalletFactory walletFactory = SmartWalletFactory(network, signer);
 
 // Finally create simple smart account
 final wallet = await walletFactory.createSimpleAccount(salt);
@@ -102,7 +102,13 @@ This library designed to be used only with gas manager, to sponsor gas for trans
 
 Important: if you want to send batch transactions use Light account type.
 
-Currently supports only Entry point versions: 0.6
-Currently supports smart accounts: Simple, Light
+
+Currently supported entry point versions: 
+ - 0.6
+
+Currently supported smart accounts:
+- Simple (does not support batch transactions)
+- Light (supports batch transactions)
+
 
 Tested on Android and Web platforms, but should work on all platforms.

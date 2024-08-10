@@ -1,6 +1,6 @@
 name: account_abstraction_alchemy
 description: "Account Abstraction smart wallet client for Alchemy, only supports usage with gas manager"
-version: 0.0.5
+version: 0.0.8
 homepage: https://wormfare.com/
 repository: https://github.com/wormfare/account-abstraction-alchemy
 issue_tracker: https://github.com/wormfare/account-abstraction-alchemy/issues
@@ -24,14 +24,14 @@ topics:
 dependencies:
   flutter:
     sdk: flutter
-  web3dart: ^2.7.1
+  web3dart: ^2.7.3
   http: ^1.2.1
   asn1lib: ^1.5.2
   blockchain_utils: ^2.1.2
+  web3dart_builders: ^0.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
   build_runner: ^2.4.6
-  web3dart_builders: ^0.1.0

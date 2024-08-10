@@ -15,6 +15,14 @@ abstract class Uint256Base {
 
   Uint256Base operator /(covariant Uint256Base other);
 
+  bool operator >(covariant Uint256Base other);
+
+  bool operator <(covariant Uint256Base other);
+
+  bool operator >=(covariant Uint256Base other);
+
+  bool operator <=(covariant Uint256Base other);
+
   /// Converts the value of this [Uint256] instance to a [BigInt] representing the equivalent amount in ether.
   ///
   /// Example 1:

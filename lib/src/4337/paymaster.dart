@@ -11,15 +11,30 @@ class Paymaster implements PaymasterBase {
   /// is not known or needed.
   EthereumAddress? _paymasterAddress;
 
+  /// Multiplier values for gas estimation.
+  final int preVerificationGasMultiplier;
+  final int maxFeePerGasMultiplier;
+  final int maxPriorityFeePerGasMultiplier;
+  final int callGasLimitMultiplier;
+  final int verificationGasLimitMultiplier;
+
   /// Creates a new instance of the [Paymaster] class.
   ///
-  /// [_network] is the Ethereum chain configuration.
-  /// [_paymasterAddress] is an optional address of the Paymaster contract.
+  /// [network] is the Ethereum chain configuration.
+  /// [paymasterAddress] is an optional address of the Paymaster contract.
   ///
   /// Throws an [InvalidPaymasterUrl] exception if the paymaster URL in the
   /// provided chain configuration is not a valid URL.
-  Paymaster(this._network, [this._paymasterAddress])
-      : assert(_network.paymasterUrl.isURL(),
+  Paymaster(
+    this._network, {
+    EthereumAddress? paymasterAddress,
+    this.preVerificationGasMultiplier = 3,
+    this.maxFeePerGasMultiplier = 3,
+    this.maxPriorityFeePerGasMultiplier = 3,
+    this.callGasLimitMultiplier = 3,
+    this.verificationGasLimitMultiplier = 3,
+  })  : _paymasterAddress = paymasterAddress,
+        assert(_network.paymasterUrl.isURL(),
             InvalidPaymasterUrl(_network.paymasterUrl)),
         _rpc = RPCBase(_network.paymasterUrl);
 
@@ -70,7 +85,14 @@ class Paymaster implements PaymasterBase {
       'policyId': _network.gasPolicyId,
       'entryPoint': entrypoint.address.hex,
       'dummySignature': Constants.dummySignature,
-      'userOperation': minimalUserOp
+      'userOperation': minimalUserOp,
+      "overrides": {
+        "preVerificationGas": {"multiplier": preVerificationGasMultiplier},
+        "maxFeePerGas": {"multiplier": maxFeePerGasMultiplier},
+        "maxPriorityFeePerGas": {"multiplier": maxPriorityFeePerGasMultiplier},
+        "callGasLimit": {"multiplier": callGasLimitMultiplier},
+        "verificationGasLimit": {"multiplier": verificationGasLimitMultiplier}
+      }
     };
 
     final response = await _rpc.send<Map<String, dynamic>>(

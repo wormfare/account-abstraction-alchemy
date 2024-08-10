@@ -231,9 +231,8 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
 
     BigInt totalGas =
         res.callGasLimit + res.verificationGasLimit + res.preVerificationGas;
+    BigInt totalCostInWei = totalGas * res.maxFeePerGas;
 
-    BigInt totalGasPrice = res.maxFeePerGas + res.maxPriorityFeePerGas;
-
-    return totalGas * totalGasPrice;
+    return totalCostInWei;
   }
 }
