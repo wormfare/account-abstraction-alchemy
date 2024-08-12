@@ -17,7 +17,8 @@ class BundlerProvider implements BundlerProviderBase {
   ///  It sends an RPC request to
   /// retrieve the chain ID and verifies that it matches the expected chain ID.
   /// If the chain IDs don't match, the _initialized flag is set to false.
-  BundlerProvider(NetworkConfig chain) : rpc = RPCBase(chain.bundlerUrl) {
+  BundlerProvider(NetworkConfig chain, http.Client? httpClient)
+      : rpc = RPCBase(chain.bundlerUrl, client: httpClient) {
     rpc
         .send<String>('eth_chainId')
         .then(BigInt.parse)
@@ -101,9 +102,9 @@ class JsonRPCProvider implements JsonRPCProviderBase {
   ///
   /// The constructor checks if the JSON-RPC URL is a valid URL and initializes
   /// the RPC client with the JSON-RPC URL.
-  JsonRPCProvider(NetworkConfig chain)
+  JsonRPCProvider(NetworkConfig chain, http.Client? httpClient)
       : assert(chain.jsonRpcUrl.isURL(), InvalidJsonRpcUrl(chain.jsonRpcUrl)),
-        rpc = RPCBase(chain.jsonRpcUrl);
+        rpc = RPCBase(chain.jsonRpcUrl, client: httpClient);
 
   Future<TransactionReceipt> getTransactionReceipt(String txHash) async {
     final result = await rpc
@@ -216,7 +217,12 @@ class JsonRPCProvider implements JsonRPCProviderBase {
 }
 
 class RPCBase extends JsonRPC {
-  RPCBase(String url) : super(url, http.Client());
+  /// Creates an instance of [RPCBase] with the specified [url] and optional [client].
+  ///
+  /// The [client] parameter allows passing a custom `http.Client`. If not provided,
+  /// a default `http.Client()` will be used.
+  RPCBase(String url, {http.Client? client})
+      : super(url, client ?? http.Client());
 
   /// Asynchronously sends an RPC call to the Ethereum node for the specified function and parameters.
   ///

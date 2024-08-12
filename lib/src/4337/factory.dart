@@ -15,6 +15,7 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
   final int maxPriorityFeePerGasMultiplier;
   final int callGasLimitMultiplier;
   final int verificationGasLimitMultiplier;
+  final http.Client httpClient;
 
   late final JsonRPCProvider _jsonRpc;
   late final BundlerProvider _bundler;
@@ -34,8 +35,10 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
     this.maxPriorityFeePerGasMultiplier = 3,
     this.callGasLimitMultiplier = 3,
     this.verificationGasLimitMultiplier = 3,
-  })  : _jsonRpc = JsonRPCProvider(_networkConfig),
-        _bundler = BundlerProvider(_networkConfig) {
+    http.Client? httpClient,
+  })  : httpClient = httpClient ?? http.Client(),
+        _jsonRpc = JsonRPCProvider(_networkConfig, httpClient),
+        _bundler = BundlerProvider(_networkConfig, httpClient) {
     _contract = Contract(_jsonRpc.rpc);
   }
 
