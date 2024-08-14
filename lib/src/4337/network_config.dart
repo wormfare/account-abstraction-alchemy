@@ -26,6 +26,15 @@ class NetworkConfig {
   /// The URL of the paymaster service for this chain.
   late String paymasterUrl;
 
+  /// The default JSON-RPC URL for this chain.
+  late final String defaultJsonRpcUrl;
+
+  /// The default bundler URL for this chain.
+  late final String defaultBundlerUrl;
+
+  /// The default paymaster URL for this chain.
+  late final String defaultPaymasterUrl;
+
   /// Smart account type
   late AccountType accountType;
 
@@ -41,6 +50,8 @@ class NetworkConfig {
   /// [bundlerUrl] is the URL of the bundler service for this chain.
   /// [paymasterUrl] is the optional URL of the paymaster service for this
   ///   chain.
+  /// If [customJsonRpcUrl], [customBundlerUrl], or [customPaymasterUrl] are provided,
+  /// they will be used instead of the default URLs.
   ///
   /// Example:
   ///
@@ -56,43 +67,49 @@ class NetworkConfig {
   /// );
   /// ```
 
-  NetworkConfig(
-      {required this.chainId,
-      required this.explorer,
-      required this.jsonRpcUrl,
-      required this.bundlerUrl,
-      required this.paymasterUrl});
+  NetworkConfig({
+    required this.chainId,
+    required this.explorer,
+    String? customJsonRpcUrl,
+    String? customBundlerUrl,
+    String? customPaymasterUrl,
+  }) {
+    jsonRpcUrl = customJsonRpcUrl ?? defaultJsonRpcUrl;
+    bundlerUrl = customBundlerUrl ?? defaultBundlerUrl;
+    paymasterUrl = customPaymasterUrl ?? defaultPaymasterUrl;
+  }
 }
 
 //predefined Chains you can use
 class NetworkConfigs {
   static Map<Network, NetworkConfig> networks = {
     Network.ethereum: NetworkConfig(
-        chainId: 1,
-        explorer: 'https://etherscan.io/',
-        jsonRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/',
-        bundlerUrl: 'https://eth-mainnet.g.alchemy.com/v2/',
-        paymasterUrl: 'https://eth-mainnet.g.alchemy.com/v2/'),
+      chainId: 1,
+      explorer: 'https://etherscan.io/',
+      customJsonRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/',
+      customBundlerUrl: 'https://eth-mainnet.g.alchemy.com/v2/',
+      customPaymasterUrl: 'https://eth-mainnet.g.alchemy.com/v2/',
+    ),
     Network.polygon: NetworkConfig(
       chainId: 137,
       explorer: 'https://polygonscan.com/',
-      jsonRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2/',
-      bundlerUrl: 'https://polygon-mainnet.g.alchemy.com/v2/',
-      paymasterUrl: 'https://polygon-mainnet.g.alchemy.com/v2/',
+      customJsonRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2/',
+      customBundlerUrl: 'https://polygon-mainnet.g.alchemy.com/v2/',
+      customPaymasterUrl: 'https://polygon-mainnet.g.alchemy.com/v2/',
     ),
     Network.sepolia: NetworkConfig(
       chainId: 11155111,
       explorer: 'https://sepolia.etherscan.io/',
-      jsonRpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
-      bundlerUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
-      paymasterUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
+      customJsonRpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
+      customBundlerUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
+      customPaymasterUrl: 'https://eth-sepolia.g.alchemy.com/v2/',
     ),
     Network.polygonAmoy: NetworkConfig(
       chainId: 80002,
       explorer: 'https://amoy.polygonscan.com/',
-      jsonRpcUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
-      bundlerUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
-      paymasterUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
+      customJsonRpcUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
+      customBundlerUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
+      customPaymasterUrl: 'https://polygon-amoy.g.alchemy.com/v2/',
     ),
   };
 
@@ -108,33 +125,44 @@ class NetworkConfigs {
   /// This method retrieves the [NetworkConfig] instance from a predefined map of
   /// networks and their corresponding chain configurations.
   ///
+  /// If [customJsonRpcUrl], [customBundlerUrl], or [customPaymasterUrl] are provided,
+  /// they will be used instead of the default URLs.
+  ///
   /// Example:
   ///
   /// ```dart
   /// final chain = Chains.getChain(Network.ethereum, AccountType.simple, EntryPointVersion.v06, 'xxx-api-key');
   /// ```
+
   static NetworkConfig getConfig(
     Network network,
     AccountType accountType,
     EntryPointVersion version,
     String alchemyApiKey,
-    String gasPolicyId,
-  ) {
+    String gasPolicyId, {
+    String? customJsonRpcUrl,
+    String? customBundlerUrl,
+    String? customPaymasterUrl,
+  }) {
     if (version == EntryPointVersion.v07) {
       throw Exception('v.0.7 not yet implemented');
     }
 
     final originalNetwork = networks[network]!;
-    final jsonRpcUrl = originalNetwork.jsonRpcUrl + alchemyApiKey;
-    final bundlerUrl = originalNetwork.bundlerUrl + alchemyApiKey;
-    final paymasterUrl = originalNetwork.paymasterUrl + alchemyApiKey;
+
+    final jsonRpcUrl =
+        customJsonRpcUrl ?? (originalNetwork.jsonRpcUrl + alchemyApiKey);
+    final bundlerUrl =
+        customBundlerUrl ?? (originalNetwork.bundlerUrl + alchemyApiKey);
+    final paymasterUrl =
+        customPaymasterUrl ?? (originalNetwork.paymasterUrl + alchemyApiKey);
 
     final NetworkConfig updatedNetwork = NetworkConfig(
       chainId: originalNetwork.chainId,
       explorer: originalNetwork.explorer,
-      jsonRpcUrl: jsonRpcUrl,
-      bundlerUrl: bundlerUrl,
-      paymasterUrl: paymasterUrl,
+      customJsonRpcUrl: jsonRpcUrl,
+      customBundlerUrl: bundlerUrl,
+      customPaymasterUrl: paymasterUrl,
     );
 
     updatedNetwork.entrypoint = (version == EntryPointVersion.v06)

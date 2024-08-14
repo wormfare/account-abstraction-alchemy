@@ -33,3 +33,6 @@
 ## 0.0.9
 * Introduced the ability to pass a custom `http.Client` instance to the `SmartWalletFactory`, `JsonRPCProvider`, and `BundlerProvider` classes.
   - This can allow to pass SentryHttpClient to catch http rpc errors
+  
+## 0.1.0
+* Added support for passing custom `jsonRpcUrl`, `bundlerUrl`, and `paymasterUrl` into `NetworkConfig`.
