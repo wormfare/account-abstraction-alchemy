@@ -36,3 +36,6 @@
   
 ## 0.1.0
 * Added support for passing custom `jsonRpcUrl`, `bundlerUrl`, and `paymasterUrl` into `NetworkConfig`.
+
+## 0.1.1
+* Added drop and replace mechanism for stalled user operations (with 10% increase in gas when replaced)

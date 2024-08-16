@@ -103,7 +103,7 @@ class Contract {
     };
     return rpc.send<String>('eth_call', [
       calldata,
-      BlockNum.current().toBlockParam()
+      const BlockNum.current().toBlockParam()
     ]).then((value) => function.decodeReturnValues(value));
   }
 
