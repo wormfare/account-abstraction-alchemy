@@ -24,11 +24,11 @@ topics:
 dependencies:
   flutter:
     sdk: flutter
-  web3dart: ^2.7.3
   http: ^1.2.1
   asn1lib: ^1.5.2
   blockchain_utils: ^2.1.2
   web3dart_builders: ^0.1.2
+  web3dart: ^2.7.3
 
 dev_dependencies:
   flutter_test:

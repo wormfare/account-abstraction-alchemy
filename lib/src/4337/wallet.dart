@@ -119,8 +119,8 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
   @override
   Future<UserOperationResponse> sendSignedUserOperation(UserOperation op) =>
       plugin<BundlerProviderBase>('bundler')
-          .sendUserOperation(
-              op.toMap(_network.entrypoint.version), _network.entrypoint)
+          .sendUserOperation(op.toMap(_network.entrypoint.version),
+              _network.entrypoint, dropAndReplaceUserOperation)
           .catchError((e) => throw SendError(e.toString(), op));
 
   @override
@@ -138,7 +138,7 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
     }
 
     // intercept the user operation to populate gas data and sponsor tx
-    op = await plugin<Paymaster>('paymaster').intercept(op);
+    op = await plugin<Paymaster>('paymaster').interceptToSponsor(op);
 
     // Validate the user operation
     op.validate(op.nonce > BigInt.zero, _network.entrypoint.version, initCode);
@@ -190,6 +190,27 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
     op.signature = signatureHex;
 
     return op;
+  }
+
+  @override
+  Future<ReplaceUserOperationResult> dropAndReplaceUserOperation(
+      String opHash) async {
+    final bundler = plugin<BundlerProviderBase>('bundler');
+    final opToDrop = await bundler.getUserOperationByHash(opHash);
+
+    final paymaster = plugin<Paymaster>('paymaster');
+    final interceptedOp = await paymaster.interceptToDropReplace(opToDrop);
+    final signedOp = await signUserOperation(interceptedOp);
+
+    final receipt = await bundler.getUserOpReceipt(opHash);
+
+    if (receipt != null) {
+      return ReplaceUserOperationReceipt(receipt);
+    }
+
+    final response = await sendSignedUserOperation(signedOp);
+
+    return ReplaceUserOperationResponse(response);
   }
 
   /// Returns the nonce for the Smart Wallet address.

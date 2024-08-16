@@ -246,4 +246,10 @@ abstract class SmartWalletBase {
   Future<BigInt> estimateGasForBatchedOperation(
       List<EthereumAddress> recipients, List<Uint8List> calls,
       {List<EtherAmount>? amounts});
+
+  // TODO description
+  // In case of congested network conditions drop and replace stuck user operation with same user operation but with increased gas
+  Future<ReplaceUserOperationResult> dropAndReplaceUserOperation(
+    String opHash,
+  );
 }

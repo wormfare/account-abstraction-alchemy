@@ -456,20 +456,42 @@ class UserOperation implements UserOperationBase {
 class UserOperationByHash {
   UserOperation userOperation;
   final String entryPoint;
-  final BigInt blockNumber;
-  final BigInt blockHash;
-  final BigInt transactionHash;
-  UserOperationByHash(this.userOperation, this.entryPoint, this.blockNumber,
-      this.blockHash, this.transactionHash);
+  final BigInt? blockNumber;
+  final BigInt? blockHash;
+  final BigInt? transactionHash;
+
+  UserOperationByHash(
+    this.userOperation,
+    this.entryPoint,
+    this.blockNumber,
+    this.blockHash,
+    this.transactionHash,
+  );
 
   factory UserOperationByHash.fromMap(Map<String, dynamic> map) {
     return UserOperationByHash(
       UserOperation.fromMap(map['userOperation']),
       map['entryPoint'],
-      BigInt.parse(map['blockNumber']),
-      BigInt.parse(map['blockHash']),
-      BigInt.parse(map['transactionHash']),
+      map['blockNumber'] != null ? BigInt.parse(map['blockNumber']) : null,
+      map['blockHash'] != null ? BigInt.parse(map['blockHash']) : null,
+      map['transactionHash'] != null
+          ? BigInt.parse(map['transactionHash'])
+          : null,
     );
+  }
+
+  Map<String, dynamic> toMap([double version = 0.6]) {
+    return {
+      'userOperation': userOperation.toMap(version),
+      'entryPoint': entryPoint,
+      'blockNumber':
+          blockNumber != null ? '0x${blockNumber!.toRadixString(16)}' : null,
+      'blockHash':
+          blockHash != null ? '0x${blockHash!.toRadixString(16)}' : null,
+      'transactionHash': transactionHash != null
+          ? '0x${transactionHash!.toRadixString(16)}'
+          : null,
+    };
   }
 }
 
@@ -580,16 +602,19 @@ class Receipt {
 }
 
 class UserOperationResponse {
-  final String userOpHash;
+  String userOpHash;
   final Future<UserOperationReceipt?> Function(String) _callback;
+  final Future<ReplaceUserOperationResult> Function(String)? _dropAndReplace;
 
-  UserOperationResponse(this.userOpHash, this._callback);
+  UserOperationResponse(this.userOpHash, this._callback,
+      [this._dropAndReplace]);
 
   Future<UserOperationReceipt?> wait(
       [Duration timeout = const Duration(seconds: 60),
       Duration pollInterval = const Duration(seconds: 10)]) async {
     Duration elapsed = Duration.zero;
-    while (elapsed < timeout) {
+
+    while (true) {
       try {
         debugPrint('Polling for receipt, elapsed time: ${elapsed.inSeconds}s');
         final receipt = await _callback(userOpHash);
@@ -605,9 +630,47 @@ class UserOperationResponse {
 
       await Future.delayed(pollInterval);
       elapsed += pollInterval;
-    }
 
-    throw TimeoutException(
-        'Timeout waiting for user operation with hash $userOpHash', timeout);
+      if (elapsed >= timeout) {
+        if (_dropAndReplace != null) {
+          debugPrint(
+              'Timeout occurred, attempting to drop and replace the user operation.');
+          final dropAndReplace = await _dropAndReplace(userOpHash);
+
+          if (dropAndReplace != null &&
+              dropAndReplace is ReplaceUserOperationResponse) {
+            // Reset the timeout and continue waiting with the new operation hash
+            userOpHash = dropAndReplace.response.userOpHash;
+            elapsed = Duration.zero;
+            debugPrint('Replaced operation, new hash: $userOpHash');
+          } else if (dropAndReplace is ReplaceUserOperationReceipt) {
+            // If a receipt was found during the replace, return it
+            return dropAndReplace.receipt;
+          } else {
+            // If unable to replace, return null or handle accordingly
+            debugPrint('Unable to drop and replace user operation.');
+            return null;
+          }
+        } else {
+          // No drop and replace function provided, return null or handle accordingly
+          debugPrint('Timeout reached, no drop and replace function provided.');
+          return null;
+        }
+      }
+    }
   }
+}
+
+abstract class ReplaceUserOperationResult {}
+
+class ReplaceUserOperationResponse extends ReplaceUserOperationResult {
+  final UserOperationResponse response;
+
+  ReplaceUserOperationResponse(this.response);
+}
+
+class ReplaceUserOperationReceipt extends ReplaceUserOperationResult {
+  final UserOperationReceipt receipt;
+
+  ReplaceUserOperationReceipt(this.receipt);
 }

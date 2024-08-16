@@ -22,6 +22,7 @@ export 'src/abis/abis.dart' show ContractAbis;
 
 part 'src/signer/interface.dart';
 part 'src/signer/private_key_signer.dart';
+part 'src/utils/helpers.dart';
 part 'src/utils/abi_coder.dart';
 part 'src/utils/crypto.dart';
 part 'src/utils/unit256.dart';

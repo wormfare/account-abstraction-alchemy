@@ -15,7 +15,10 @@ abstract class PaymasterBase {
   /// This method calls the `sponsorUserOperation` method to get the Paymaster
   /// response, and then creates a new [UserOperation] with the updated
   /// Paymaster data and gas limits.
-  Future<UserOperation> intercept(UserOperation operation);
+  Future<UserOperation> interceptToSponsor(UserOperation operation);
+
+  // todo description
+  Future<UserOperation> interceptToDropReplace(UserOperationByHash operation);
 
   /// Sponsors a user operation with the Paymaster.
   ///
@@ -30,5 +33,20 @@ abstract class PaymasterBase {
   Future<PaymasterResponse> requestGasAndPaymasterAndData(
     Map<String, dynamic> userOp,
     EntryPointAddress entrypoint,
+  );
+
+  // TODO description of method
+  Future<UserOperation> updateGasAndPaymasterSignature(
+    Map<String, dynamic> userOp,
+    EntryPointAddress entrypoint,
+  );
+
+  // TODO description of method
+  Future<Map<String, BigInt>> estimateAndCompareFees(
+      Map<String, dynamic> opToDrop);
+
+  // TODO description of method
+  Future<PaymasterSignatureResponse> pmGetPaymasterStubData(
+    Map<String, dynamic> opToDrop,
   );
 }

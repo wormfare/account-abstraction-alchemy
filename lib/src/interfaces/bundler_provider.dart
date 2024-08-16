@@ -115,7 +115,10 @@ abstract class BundlerProviderBase {
   ///  User operations can become "stuck" in the mempool if their gas fee
   ///  limits are too low to be included in a bundle.
   Future<UserOperationResponse> sendUserOperation(
-      Map<String, dynamic> userOp, EntryPointAddress entrypoint);
+      Map<String, dynamic> userOp,
+      EntryPointAddress entrypoint,
+      Future<ReplaceUserOperationResult> Function(String)
+          dropAndReplaceUserOperation);
 
   /// Asynchronously retrieves a list of supported entrypoints from the bundler.
   ///

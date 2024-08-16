@@ -70,7 +70,10 @@ class BundlerProvider implements BundlerProviderBase {
 
   @override
   Future<UserOperationResponse> sendUserOperation(
-      Map<String, dynamic> userOp, EntryPointAddress entrypoint) async {
+      Map<String, dynamic> userOp,
+      EntryPointAddress entrypoint,
+      Future<ReplaceUserOperationResult> Function(String)
+          dropAndReplaceUserOperation) async {
     Logger.conditionalWarning(
         !_initialized, 'sendUserOp may fail: chainId mismatch');
 
@@ -79,7 +82,8 @@ class BundlerProvider implements BundlerProviderBase {
 
     debugPrint('>>>>>>>>>>> TX SENT SUCCESSFULLY :::: HASH $opHash ');
 
-    return UserOperationResponse(opHash, getUserOpReceipt);
+    return UserOperationResponse(
+        opHash, getUserOpReceipt, dropAndReplaceUserOperation);
   }
 
   @override

@@ -10,11 +10,11 @@ class SmartWalletFactory implements SmartWalletFactoryBase {
   final NetworkConfig _networkConfig;
   final Signer _signer;
 
-  final int preVerificationGasMultiplier;
-  final int maxFeePerGasMultiplier;
-  final int maxPriorityFeePerGasMultiplier;
-  final int callGasLimitMultiplier;
-  final int verificationGasLimitMultiplier;
+  final num preVerificationGasMultiplier;
+  final num maxFeePerGasMultiplier;
+  final num maxPriorityFeePerGasMultiplier;
+  final num callGasLimitMultiplier;
+  final num verificationGasLimitMultiplier;
   final http.Client httpClient;
 
   late final JsonRPCProvider _jsonRpc;
