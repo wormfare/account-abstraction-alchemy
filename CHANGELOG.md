@@ -39,3 +39,6 @@
 
 ## 0.1.1
 * Added drop and replace mechanism for stalled user operations (with 10% increase in gas when replaced)
+
+## 0.1.2
+* Wait for user operation - added support to pass callback when stuck transaction is replaced

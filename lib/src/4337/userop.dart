@@ -609,9 +609,11 @@ class UserOperationResponse {
   UserOperationResponse(this.userOpHash, this._callback,
       [this._dropAndReplace]);
 
-  Future<UserOperationReceipt?> wait(
-      [Duration timeout = const Duration(seconds: 60),
-      Duration pollInterval = const Duration(seconds: 10)]) async {
+  Future<UserOperationReceipt?> wait({
+    Duration timeout = const Duration(seconds: 60),
+    Duration pollInterval = const Duration(seconds: 10),
+    void Function(String)? onReplace,
+  }) async {
     Duration elapsed = Duration.zero;
 
     while (true) {
@@ -641,6 +643,7 @@ class UserOperationResponse {
               dropAndReplace is ReplaceUserOperationResponse) {
             // Reset the timeout and continue waiting with the new operation hash
             userOpHash = dropAndReplace.response.userOpHash;
+            onReplace?.call(userOpHash);
             elapsed = Duration.zero;
             debugPrint('Replaced operation, new hash: $userOpHash');
           } else if (dropAndReplace is ReplaceUserOperationReceipt) {
