@@ -45,3 +45,6 @@
 
 ## 0.1.3
 * Update transaction fee estimation method
+
+## 0.1.4
+* Fix transaction fee estimation method

@@ -94,7 +94,17 @@ class BundlerProvider implements BundlerProviderBase {
   Future<BigInt> estimateTransactionFee(
       UserOperation userOp, EntryPointAddress entrypoint) async {
     final opMap = userOp.toMap(entrypoint.version);
+    const keysToRemove = [
+      'callGasLimit',
+      'verificationGasLimit',
+      'preVerificationGas',
+      'maxFeePerGas',
+      'maxPriorityFeePerGas',
+    ];
 
+    for (final key in keysToRemove) {
+      opMap.remove(key);
+    }
     final results = await Future.wait([
       estimateUserOperationGas(opMap, entrypoint),
       rpc.send<String>("rundler_maxPriorityFeePerGas"),
