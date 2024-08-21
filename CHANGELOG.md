@@ -42,3 +42,6 @@
 
 ## 0.1.2
 * Wait for user operation - added support to pass callback when stuck transaction is replaced
+
+## 0.1.3
+* Update transaction fee estimation method

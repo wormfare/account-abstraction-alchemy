@@ -499,31 +499,21 @@ class UserOperationGas {
   final BigInt callGasLimit;
   final BigInt verificationGasLimit;
   final BigInt preVerificationGas;
-  BigInt? validAfter;
-  BigInt? validUntil;
   UserOperationGas({
     required this.callGasLimit,
     required this.verificationGasLimit,
     required this.preVerificationGas,
-    this.validAfter,
-    this.validUntil,
   });
   factory UserOperationGas.fromMap(Map<String, dynamic> map) {
-    final List<BigInt> accountGasLimits = map['accountGasLimits'] != null
-        ? unpackUints(map['accountGasLimits'])
-        : [
-            BigInt.parse(map['verificationGasLimit']),
-            BigInt.parse(map['callGasLimit'])
-          ];
+    final List<BigInt> accountGasLimits = [
+      BigInt.parse(map['verificationGasLimit']),
+      BigInt.parse(map['callGasLimit'])
+    ];
 
     return UserOperationGas(
       verificationGasLimit: accountGasLimits[0],
       callGasLimit: accountGasLimits[1],
       preVerificationGas: BigInt.parse(map['preVerificationGas']),
-      validAfter:
-          map['validAfter'] != null ? BigInt.parse(map['validAfter']) : null,
-      validUntil:
-          map['validUntil'] != null ? BigInt.parse(map['validUntil']) : null,
     );
   }
 }

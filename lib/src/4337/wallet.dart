@@ -131,14 +131,16 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
 
   @override
   Future<UserOperation> prepareUserOperation(UserOperation op,
-      {bool update = true}) async {
+      {bool update = true, bool shouldPaymasterIntercept = true}) async {
     // Update the user operation with the latest nonce and gas prices if needed
     if (update) {
       op = await _updateUserOperation(op);
     }
 
-    // intercept the user operation to populate gas data and sponsor tx
-    op = await plugin<Paymaster>('paymaster').interceptToSponsor(op);
+    if (shouldPaymasterIntercept) {
+      // intercept the user operation to populate gas data and sponsor tx
+      op = await plugin<Paymaster>('paymaster').interceptToSponsor(op);
+    }
 
     // Validate the user operation
     op.validate(op.nonce > BigInt.zero, _network.entrypoint.version, initCode);
@@ -246,14 +248,14 @@ class SmartWallet with _PluginManager, _GasSettings implements SmartWalletBase {
         return op;
       });
 
-  /// Returns transaction fee price, taken from [UserOperation] paymaster response
+  /// Returns transaction fee price
   Future<BigInt> _estimateGas(UserOperation op) async {
-    final res = await prepareUserOperation(op);
+    final preparedOp =
+        await prepareUserOperation(op, shouldPaymasterIntercept: false);
 
-    BigInt totalGas =
-        res.callGasLimit + res.verificationGasLimit + res.preVerificationGas;
-    BigInt totalCostInWei = totalGas * res.maxFeePerGas;
+    final res = await plugin<BundlerProviderBase>('bundler')
+        .estimateTransactionFee(preparedOp, _network.entrypoint);
 
-    return totalCostInWei;
+    return res;
   }
 }

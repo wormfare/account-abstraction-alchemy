@@ -29,12 +29,8 @@ class BundlerProvider implements BundlerProviderBase {
   @override
   Future<UserOperationGas> estimateUserOperationGas(
       Map<String, dynamic> userOp, EntryPointAddress entrypoint) async {
-    Logger.conditionalWarning(
-        !_initialized, "estimateUserOpGas may fail: chainId mismatch");
-
     final opGas = await rpc.send<Map<String, dynamic>>(
         'eth_estimateUserOperationGas', [userOp, entrypoint.address.hex]);
-
     return UserOperationGas.fromMap(opGas);
   }
 
@@ -91,6 +87,29 @@ class BundlerProvider implements BundlerProviderBase {
     final entrypointList =
         await rpc.send<List<dynamic>>('eth_supportedEntryPoints');
     return List.castFrom(entrypointList);
+  }
+
+  @override
+  @override
+  Future<BigInt> estimateTransactionFee(
+      UserOperation userOp, EntryPointAddress entrypoint) async {
+    final opMap = userOp.toMap(entrypoint.version);
+
+    final results = await Future.wait([
+      estimateUserOperationGas(opMap, entrypoint),
+      rpc.send<String>("rundler_maxPriorityFeePerGas"),
+    ]);
+
+    final userOperationGas = results[0] as UserOperationGas;
+    final priorityFeePerGas = Uint256.fromHex(results[1] as String);
+
+    final totalGas = userOperationGas.verificationGasLimit +
+        userOperationGas.callGasLimit +
+        userOperationGas.preVerificationGas;
+
+    final estimatedTransactionFee = totalGas * priorityFeePerGas.value;
+
+    return estimatedTransactionFee;
   }
 }
 
@@ -173,26 +192,12 @@ class JsonRPCProvider implements JsonRPCProviderBase {
 
   @override
   Future<Map<String, EtherAmount>> getEip1559GasPrice() async {
-    // Fetch the latest priority fee (tip)
-    final tipResponse = await rpc.send<String>('eth_maxPriorityFeePerGas');
-    final tip = Uint256.fromHex(tipResponse);
-
-    // Fetch the latest base fee from the latest block
-    final latestBlock = await rpc
-        .send<Map<String, dynamic>>('eth_getBlockByNumber', ['latest', false]);
-    final baseFee = Uint256.fromHex(latestBlock['baseFeePerGas']);
-
-    // Calculate the priority fee with a buffer for Rundler's tip
-    final tipBuffer =
-        tip * Uint256(BigInt.from(25)) / Uint256(BigInt.from(100));
-    final maxPriorityFeePerGas = tip + tipBuffer;
-
-    // Calculate maxFeePerGas to be competitive
-    final maxFeeBuffer = (baseFee + maxPriorityFeePerGas) *
-        Uint256(BigInt.from(10)) /
-        Uint256(BigInt.from(100));
-    final maxFeePerGas = baseFee + maxPriorityFeePerGas + maxFeeBuffer;
-
+    final fee = await rpc.send<String>("eth_maxPriorityFeePerGas");
+    final tip = Uint256.fromHex(fee);
+    final mul = Uint256(BigInt.from(100 * 13));
+    final buffer = tip / mul;
+    final maxPriorityFeePerGas = tip + buffer;
+    final maxFeePerGas = maxPriorityFeePerGas;
     return {
       'maxFeePerGas': EtherAmount.fromBigInt(EtherUnit.wei, maxFeePerGas.value),
       'maxPriorityFeePerGas':

@@ -150,4 +150,7 @@ abstract class BundlerProviderBase {
   static validateBundlerMethod(String method) {
     assert(methods.contains(method), InvalidBundlerMethod(method));
   }
+
+  Future<BigInt> estimateTransactionFee(
+      UserOperation userOp, EntryPointAddress entrypoint);
 }
