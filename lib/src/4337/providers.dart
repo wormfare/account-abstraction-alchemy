@@ -90,7 +90,6 @@ class BundlerProvider implements BundlerProviderBase {
   }
 
   @override
-  @override
   Future<BigInt> estimateTransactionFee(
       UserOperation userOp, EntryPointAddress entrypoint) async {
     final opMap = userOp.toMap(entrypoint.version);
@@ -108,16 +107,25 @@ class BundlerProvider implements BundlerProviderBase {
     final results = await Future.wait([
       estimateUserOperationGas(opMap, entrypoint),
       rpc.send<String>("rundler_maxPriorityFeePerGas"),
+      rpc.send<Map<String, dynamic>>('eth_getBlockByNumber', ['latest', false]),
     ]);
 
     final userOperationGas = results[0] as UserOperationGas;
     final priorityFeePerGas = Uint256.fromHex(results[1] as String);
+    final latestBlock = results[2] as Map<String, dynamic>;
+
+    final blockBaseFee = Uint256.fromHex(latestBlock['baseFeePerGas']);
+
+    final effectiveGasPrice =
+        (blockBaseFee.value + priorityFeePerGas.value) < priorityFeePerGas.value
+            ? (blockBaseFee.value + priorityFeePerGas.value)
+            : priorityFeePerGas.value;
 
     final totalGas = userOperationGas.verificationGasLimit +
         userOperationGas.callGasLimit +
         userOperationGas.preVerificationGas;
 
-    final estimatedTransactionFee = totalGas * priorityFeePerGas.value;
+    final estimatedTransactionFee = totalGas * effectiveGasPrice;
 
     return estimatedTransactionFee;
   }

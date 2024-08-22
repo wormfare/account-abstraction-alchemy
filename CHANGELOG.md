@@ -48,3 +48,6 @@
 
 ## 0.1.4
 * Fix transaction fee estimation method
+
+## 0.1.5
+* Adjust gas price estimation as per entry point formula
