@@ -51,3 +51,6 @@
 
 ## 0.1.5
 * Adjust gas price estimation as per entry point formula
+
+## 0.1.6
+* Minor fix gas price estimation

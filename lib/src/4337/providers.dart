@@ -93,17 +93,17 @@ class BundlerProvider implements BundlerProviderBase {
   Future<BigInt> estimateTransactionFee(
       UserOperation userOp, EntryPointAddress entrypoint) async {
     final opMap = userOp.toMap(entrypoint.version);
+
     const keysToRemove = [
       'callGasLimit',
       'verificationGasLimit',
       'preVerificationGas',
-      'maxFeePerGas',
-      'maxPriorityFeePerGas',
     ];
 
     for (final key in keysToRemove) {
       opMap.remove(key);
     }
+
     final results = await Future.wait([
       estimateUserOperationGas(opMap, entrypoint),
       rpc.send<String>("rundler_maxPriorityFeePerGas"),
@@ -114,18 +114,22 @@ class BundlerProvider implements BundlerProviderBase {
     final priorityFeePerGas = Uint256.fromHex(results[1] as String);
     final latestBlock = results[2] as Map<String, dynamic>;
 
+    // Retrieve block base fee for gas
     final blockBaseFee = Uint256.fromHex(latestBlock['baseFeePerGas']);
 
-    final effectiveGasPrice =
-        (blockBaseFee.value + priorityFeePerGas.value) < priorityFeePerGas.value
-            ? (blockBaseFee.value + priorityFeePerGas.value)
-            : priorityFeePerGas.value;
+    // Calculate gasFee based on EIP-1559 (base fee + priority fee)
+    final gasFee = blockBaseFee.value + priorityFeePerGas.value;
 
-    final totalGas = userOperationGas.verificationGasLimit +
+    // Total gas limits for the transaction
+    final gasUsed = userOperationGas.verificationGasLimit +
         userOperationGas.callGasLimit +
         userOperationGas.preVerificationGas;
 
-    final estimatedTransactionFee = totalGas * effectiveGasPrice;
+    // Safety margin
+    final gasUsedWithMargin = BigInt.from(1.2 * gasUsed.toDouble());
+
+    // Calculate estimated fee (total gas used * gasFee)
+    final estimatedTransactionFee = gasUsedWithMargin * gasFee;
 
     return estimatedTransactionFee;
   }
